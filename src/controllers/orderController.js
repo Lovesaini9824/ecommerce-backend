@@ -51,6 +51,46 @@ const buyNow = async (req, res) => {
 
 // get my order
 
+// const getMyOrders = async (req, res) => {
+//   try {
+//     const userId = req.user._id;
+
+//     const orders = await Order.find({ userId })
+//       .populate('items.productId', 'title price image')
+//       .sort({ createdAt: -1 });
+
+//     // FIXED: ensure numbers instead of strings
+//     const formattedOrders = orders.map(order => ({
+//       orderId: order._id.toString(),
+//       total: Number(order.total) || 0,  
+//       items: order.items.map(i => ({
+//         productId: i.productId?._id,
+//         title: i.productId?.title,
+//         price: Number(i.productId?.price ?? 0),  
+//         qty: Number(i.qty ?? 1),                 
+//         // image: i.productId?.image,
+//         image: i.productId?.image
+//           ? `${process.env.BASE_URL}${i.productId.image}`
+//           : null,
+
+//       })),
+//       status: order.status || 'Approved',
+//       payment_type: order.payment_type || 'COD',
+//       address: order.address,
+//       createdAt: order.createdAt,
+//     }));
+
+
+//     res.json({
+//       success: true,
+//       orders: formattedOrders,
+//     });
+//   } catch (error) {
+//     console.error('Get orders error:', error);
+//     res.status(500).json({ message: 'Failed to fetch orders' });
+//   }
+// };
+
 const getMyOrders = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -59,18 +99,44 @@ const getMyOrders = async (req, res) => {
       .populate('items.productId', 'title price image')
       .sort({ createdAt: -1 });
 
-    // FIXED: ensure numbers instead of strings
+    // const formattedOrders = orders.map(order => ({
+    //   orderId: order._id.toString(),
+    //   total: Number(order.total),
+    //   status: order.status,
+    //   payment_type: order.payment_type,
+    //   createdAt: order.createdAt,
+
+    //   items: order.items.map(i => ({
+    //     title: i.productId?.title,
+    //     qty: Number(i.qty),
+    //     price: Number(i.productId?.price),
+
+    //     /// ✅ FULL IMAGE URL
+    //     image: i.productId?.image
+    //       ? `${process.env.BASE_URL}${i.productId.image}`
+    //       : null,
+    //   })),
+    // }));
+
     const formattedOrders = orders.map(order => ({
       orderId: order._id.toString(),
-      total: Number(order.total) || 0,  
+      total: Number(order.total) || 0,
       items: order.items.map(i => ({
         productId: i.productId?._id,
         title: i.productId?.title,
-        price: Number(i.productId?.price ?? 0),  
-        qty: Number(i.qty ?? 1),                 
-        image: i.productId?.image,
+        price: Number(i.productId?.price ?? 0),
+        qty: Number(i.qty ?? 1),
+
+        // ✅ ALWAYS FULL IMAGE URL
+        image: i.productId?.image
+          ? `${process.env.BASE_URL}${
+              i.productId.image.startsWith('/')
+                ? i.productId.image
+                : '/' + i.productId.image
+            }`
+          : null,
       })),
-      status: order.status || 'Approved',
+      status: order.status || 'Pending',
       payment_type: order.payment_type || 'COD',
       address: order.address,
       createdAt: order.createdAt,
@@ -81,8 +147,8 @@ const getMyOrders = async (req, res) => {
       success: true,
       orders: formattedOrders,
     });
-  } catch (error) {
-    console.error('Get orders error:', error);
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ message: 'Failed to fetch orders' });
   }
 };

@@ -18,7 +18,7 @@ app.use('/api/users', require('./routes/users'));
 app.use('/api', require('./routes/address'));
 ///users/update-profile
 //images
-app.use("/images", express.static(path.join(__dirname, "assests/images")));
+app.use("/images", express.static(path.join(__dirname, "assests")));
 
 // DB connect
 (async () => {
