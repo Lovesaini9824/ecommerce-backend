@@ -11,6 +11,11 @@ const userSchema = new mongoose.Schema({
     default: 'user',
   },
   addresses: [{ type: String }],
+  role: {
+  type: String,
+  enum: ['user', 'admin'],
+  default: 'user',
+}
 
 });
 
