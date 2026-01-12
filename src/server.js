@@ -17,6 +17,8 @@ app.use('/api/orders', require('./routes/orders'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api', require('./routes/address'));
 app.use('/api/admin', require('./routes/admin'));
+const paymentRoutes = require("./routes/payment");
+app.use("/payment", paymentRoutes);
 
 ///users/update-profile
 //images
