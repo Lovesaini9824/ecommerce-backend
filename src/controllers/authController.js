@@ -36,32 +36,73 @@ const register = async (req, res) => {
 // };
 
 const login = async (req, res) => {
-  try {
+  // try {
+  //   const { email, password } = req.body;
+
+  //   const user = await User.findOne({ email });
+  //   if (!user)
+  //     return res.status(400).json({ message: 'Invalid credentials' });
+
+  //   const isMatch = await bcrypt.compare(password, user.password);
+  //   if (!isMatch)
+  //     return res.status(400).json({ message: 'Invalid credentials' });
+
+  //   const token = jwt.sign(
+  //     { id: user._id, role: user.role },
+  //     process.env.JWT_SECRET,
+  //     { expiresIn: '7d' }
+  //   );
+
+  //   // ✅ SEND COMPLETE DATA
+  //   res.json({
+  //     token,
+  //     _id: user._id,
+  //     name: user.name,
+  //     role: user.role || 'user',
+  //   });
+  // } catch (error) {
+  //   res.status(500).json({ message: 'Login failed' });
+  // }
+   try {
+    console.log("LOGIN API HIT");
+    console.log("Request body:", req.body);
+
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
-    if (!user)
-      return res.status(400).json({ message: 'Invalid credentials' });
+    console.log("User found:", user ? "YES" : "NO");
+
+    if (!user) {
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
-      return res.status(400).json({ message: 'Invalid credentials' });
+    console.log("Password match:", isMatch);
+
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
+
+    console.log("JWT_SECRET:", process.env.JWT_SECRET);
 
     const token = jwt.sign(
-      { id: user._id, role: user.role },
+      { id: user._id },
       process.env.JWT_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: "7d" }
     );
 
-    // ✅ SEND COMPLETE DATA
-    res.json({
+    res.status(200).json({
+      success: true,
       token,
-      _id: user._id,
-      name: user.name,
-      role: user.role || 'user',
+      user
     });
+
   } catch (error) {
-    res.status(500).json({ message: 'Login failed' });
+    console.error("LOGIN ERROR ❌", error);
+    res.status(500).json({
+      message: "Server error",
+      error: error.message
+    });
   }
 };
 
