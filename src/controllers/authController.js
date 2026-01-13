@@ -133,50 +133,41 @@ const register = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email & password required" });
-    }
-
+    // 1️⃣ Check user
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
+    // 2️⃣ Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    if (!process.env.JWT_SECRET) {
-      return res.status(500).json({
-        message: "JWT_SECRET missing on server",
-      });
-    }
-
+    // 3️⃣ Generate token
     const token = jwt.sign(
       { id: user._id },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
-    res.status(200).json({
-      success: true,
-      token,
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-      },
+    // 4️⃣ SEND FLUTTER-FRIENDLY RESPONSE ✅
+    return res.status(200).json({
+      token: token,
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone
     });
+
   } catch (error) {
     console.error("LOGIN ERROR ❌", error);
-    res.status(500).json({ message: "Internal server error" });
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
