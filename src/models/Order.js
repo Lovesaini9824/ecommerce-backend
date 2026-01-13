@@ -89,7 +89,15 @@ const orderSchema = new mongoose.Schema(
     shippedAt: Date,
     deliveredAt: Date,
   },
+<<<<<<< HEAD
   { timestamps: true }
 );
+=======
+  payment_type: { type: String, enum: ['COD', 'Online', 'UPI', 'Card'], default: 'COD' },
+  status: { type: String, enum: ['Pending', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled','Return Requested','Returned'], default: 'Pending' },
+  returnReason: { type: String },
+  returnRequestedAt: { type: Date },
+}, { timestamps: true });
+>>>>>>> 3f38929 (Added invoice PDF generation feature)
 
 module.exports = mongoose.model('Order', orderSchema);

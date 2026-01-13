@@ -224,9 +224,12 @@ const buyNow = async (req, res) => {
   }
 };
 
+<<<<<<< HEAD
 /* =========================
    GET MY ORDERS
 ========================= */
+=======
+>>>>>>> 3f38929 (Added invoice PDF generation feature)
 const getMyOrders = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -235,6 +238,10 @@ const getMyOrders = async (req, res) => {
       .populate('items.productId', 'title price image')
       .sort({ createdAt: -1 });
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 3f38929 (Added invoice PDF generation feature)
     const formattedOrders = orders.map(order => ({
       orderId: order._id.toString(),
       total: Number(order.total) || 0,
@@ -316,8 +323,125 @@ const placeOrder = async (req, res) => {
   }
 };
 
+<<<<<<< HEAD
 module.exports = {
   buyNow,
   getMyOrders,
   placeOrder,
 };
+=======
+const updateOrderStatus = async (req, res) => {
+  try {
+    const { orderId, status } = req.body;
+
+    const allowed = ['Pending', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled'];
+    if (!allowed.includes(status)) {
+      return res.status(400).json({ message: 'Invalid status' });
+    }
+
+    const order = await Order.findByIdAndUpdate(
+      orderId,
+      { status },
+      { new: true }
+    );
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    res.json({
+      success: true,
+      message: 'Order status updated',
+      status: order.status,
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to update status' });
+  }
+};
+
+const getAllOrders = async (req, res) => {
+  try {
+    const orders = await Order.find()
+      .populate('userId', 'name email')
+      .populate('items.productId', 'title image')
+      .sort({ createdAt: -1 });
+
+    res.json({ success: true, orders });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch orders' });
+  }
+};
+
+// const cancelOrder = async (req, res) => {
+//   const { orderId, reason } = req.body;
+
+//   const order = await Order.findById(orderId);
+//   if (!order) return res.status(404).json({ message: 'Order not found' });
+
+//   if (order.status !== 'Pending') {
+//     return res.status(400).json({ message: 'Cannot cancel now' });
+//   }
+
+//   order.status = 'Cancelled';
+//   order.cancelReason = reason;
+//   await order.save();
+
+//   res.json({ success: true, message: 'Order cancelled' });
+// };
+
+
+const cancelOrder = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { orderId } = req.params;
+
+    const order = await Order.findOne({ _id: orderId, userId });
+
+    if (!order)
+      return res.status(404).json({ message: 'Order not found' });
+
+    if (['Shipped', 'Delivered'].includes(order.status)) {
+      return res.status(400).json({ message: 'Order cannot be cancelled' });
+    }
+
+    order.status = 'Cancelled';
+    await order.save();
+
+    res.json({ success: true, message: 'Order cancelled successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Cancel failed' });
+  }
+};
+
+
+const requestReturn = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { orderId } = req.params;
+    const { reason } = req.body;
+
+    const order = await Order.findOne({ _id: orderId, userId });
+
+    if (!order)
+      return res.status(404).json({ message: 'Order not found' });
+
+    if (order.status !== 'Delivered') {
+      return res.status(400).json({ message: 'Return allowed only after delivery' });
+    }
+
+    order.status = 'Return Requested';
+    order.returnReason = reason;
+    order.returnRequestedAt = new Date();
+
+    await order.save();
+
+    res.json({ success: true, message: 'Return requested' });
+  } catch (err) {
+    res.status(500).json({ message: 'Return failed' });
+  }
+};
+
+
+
+module.exports = { placeOrder, getMyOrders, buyNow, updateOrderStatus, getAllOrders, cancelOrder, requestReturn };
+>>>>>>> 3f38929 (Added invoice PDF generation feature)
