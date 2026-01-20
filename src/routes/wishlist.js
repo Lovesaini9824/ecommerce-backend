@@ -8,5 +8,5 @@ const {
 
 router.post('/toggle', protect, toggleWishlist);
 router.get('/get-wishlist', protect, getWishlist);
-
+ 
 module.exports = router;
