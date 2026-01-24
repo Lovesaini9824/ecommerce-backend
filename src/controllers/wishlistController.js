@@ -1,6 +1,25 @@
 const Wishlist = require('../models/Wishlist');
 
 /* ADD / REMOVE */
+// const toggleWishlist = async (req, res) => {
+//   try {
+//     const userId = req.user._id;
+//     const { productId } = req.body;
+
+//     const exists = await Wishlist.findOne({ userId, productId });
+
+//     if (exists) {
+//       await Wishlist.deleteOne({ _id: exists._id });
+//       return res.json({ message: 'Removed from wishlist', wished: false });
+//     }
+
+//     await Wishlist.create({ userId, productId });
+//     res.json({ message: 'Added to wishlist', wished: true });
+//   } catch (err) {
+//     res.status(500).json({ message: 'Wishlist error' });
+//   }
+// };
+
 const toggleWishlist = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -13,50 +32,29 @@ const toggleWishlist = async (req, res) => {
       return res.json({ wished: false });
     }
 
-    // 🔴 FETCH PRODUCT
-    const product = await Product.findById(productId).lean();
-
-    if (!product) {
-      return res.status(404).json({ message: 'Product not found' });
-    }
-
-    // 🔴 SAVE SNAPSHOT
-    await Wishlist.create({
-      userId,
-      productId,
-      title: product.title,
-      price: product.price,
-      image: product.images && product.images.length > 0 ? product.images[0] : '',
-      discount: product.discount,
-      rating: product.rating,
-    });
-
+    await Wishlist.create({ userId, productId });
     res.json({ wished: true });
+
   } catch (err) {
+    if (err.code === 11000) {
+      // duplicate insert safety
+      return res.json({ wished: true });
+    }
     res.status(500).json({ message: 'Wishlist error' });
   }
 };
-/* GET USER WISHLIST */
-// const getWishlist = async (req, res) => {
-//   try {
-//     const list = await Wishlist.find({ userId: req.user._id })
-//       .populate('productId');
 
-//     res.json({ success: true, wishlist: list });
-//   } catch (err) {
-//     res.status(500).json({ message: 'Fetch failed' });
-//   }
-// };
+
+/* GET USER WISHLIST */
 const getWishlist = async (req, res) => {
   try {
-    const wishlist = await Wishlist.find({ userId: req.user._id });
-    res.json({
-        success: true,
-        data: wishlist });
+    const list = await Wishlist.find({ userId: req.user._id })
+      .populate('productId');
+
+    res.json({ success: true, wishlist: list });
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Fetch failed' });
   }
 };
-
 
 module.exports = { toggleWishlist, getWishlist };
