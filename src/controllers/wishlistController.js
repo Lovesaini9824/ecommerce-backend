@@ -1,25 +1,5 @@
 const Wishlist = require('../models/Wishlist');
 
-/* ADD / REMOVE */
-// const toggleWishlist = async (req, res) => {
-//   try {
-//     const userId = req.user._id;
-//     const { productId } = req.body;
-
-//     const exists = await Wishlist.findOne({ userId, productId });
-
-//     if (exists) {
-//       await Wishlist.deleteOne({ _id: exists._id });
-//       return res.json({ message: 'Removed from wishlist', wished: false });
-//     }
-
-//     await Wishlist.create({ userId, productId });
-//     res.json({ message: 'Added to wishlist', wished: true });
-//   } catch (err) {
-//     res.status(500).json({ message: 'Wishlist error' });
-//   }
-// };
-
 const toggleWishlist = async (req, res) => {
   try {
     const userId = req.user._id;
