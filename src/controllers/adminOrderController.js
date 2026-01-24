@@ -1,72 +1,52 @@
 const Order = require('../models/Order');
 
-const ALLOWED_STATUSES = [
-  'pending',
-  'approved',
-  'shipped',
-  'delivered',
-  'cancelled',
-];
-
-/// 🔹 GET ALL ORDERS (ADMIN)
+// GET ALL ORDERS FOR ADMIN
 const getAllOrdersAdmin = async (req, res) => {
   try {
-    const orders = await Order.find()
-      .populate('userId', 'name email')
-      .populate('items.productId', 'title image price')
-      .sort({ createdAt: -1 });
+    // ✅ Use case-insensitive status filter for pending/approved
+    const orders = await Order.find({ status: { $in: ['pending', 'Pending', 'approved', 'Approved'] } })
+    .populate('userId', 'name email') // ✅ ensure this exists
+    .populate('items.productId', 'title image')
+    .sort({ createdAt: -1 });
 
-    res.json({
-      success: true,
-      count: orders.length,
-      orders,
-    });
+// Make sure every order has user info
+    const safeOrders = orders.map(o => ({
+      ...o.toObject(),
+      userId: o.userId || { name: 'Deleted User', email: 'N/A' },
+    }));
+
+
+    res.json({ success: true, orders });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Failed to fetch orders' });
   }
 };
 
-/// 🔹 UPDATE ORDER STATUS (ADMIN)
+// UPDATE ORDER STATUS (ADMIN)
 const updateOrderStatus = async (req, res) => {
   try {
-    const { status } = req.body;
-    const orderId = req.params.id;
+    const { orderId, status } = req.body;
+    if (!orderId || !status) return res.status(400).json({ message: 'orderId and status required' });
 
-    // ✅ Validate status
-    if (!ALLOWED_STATUSES.includes(status)) {
-      return res.status(400).json({
-        message: 'Invalid order status',
-      });
+    const allowed = ['Pending', 'Approved', 'Shipped', 'Delivered', 'Cancelled'];
+    if (!allowed.includes(status.charAt(0).toUpperCase() + status.slice(1).toLowerCase())) {
+      return res.status(400).json({ message: 'Invalid status' });
     }
 
-    const order = await Order.findById(orderId);
-    if (!order) {
-      return res.status(404).json({ message: 'Order not found' });
-    }
+    const order = await Order.findByIdAndUpdate(
+      orderId,
+      { status: status.charAt(0).toUpperCase() + status.slice(1).toLowerCase() },
+      { new: true }
+    );
 
-    // ✅ Optional: Prevent backward status change
-    if (order.status === 'delivered') {
-      return res.status(400).json({
-        message: 'Delivered order cannot be changed',
-      });
-    }
+    if (!order) return res.status(404).json({ message: 'Order not found' });
 
-    order.status = status;
-    await order.save();
-
-    res.json({
-      success: true,
-      message: 'Order status updated successfully',
-      order,
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Update failed' });
+    res.json({ success: true, message: 'Order status updated', status: order.status });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to update status' });
   }
 };
 
-module.exports = {
-  getAllOrdersAdmin,
-  updateOrderStatus,
-};
+module.exports = { getAllOrdersAdmin, updateOrderStatus };
