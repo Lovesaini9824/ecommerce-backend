@@ -7,36 +7,10 @@ const wishlistSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
-
     productId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Product',
       required: true,
-    },
-
-    // 🔴 STORE EXTRA PRODUCT DATA
-    title: {
-      type: String,
-      required: true,
-    },
-
-    price: {
-      type: Number,
-      required: true,
-    },
-
-    image: {
-      type: String,
-    },
-
-    discount: {
-      type: Number,
-      default: 0,
-    },
-
-    rating: {
-      type: Number,
-      default: 0,
     },
   },
   { timestamps: true }
