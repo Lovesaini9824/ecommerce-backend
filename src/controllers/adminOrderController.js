@@ -1,27 +1,32 @@
 const Order = require('../models/Order');
 
 // GET ALL ORDERS FOR ADMIN
+
 const getAllOrdersAdmin = async (req, res) => {
   try {
-    // ✅ Use case-insensitive status filter for pending/approved
-    const orders = await Order.find({ status: { $in: ['pending', 'Pending', 'approved', 'Approved'] } })
-    .populate('userId', 'name email') // ✅ ensure this exists
-    .populate('items.productId', 'title image')
-    .sort({ createdAt: -1 });
+    const orders = await Order.find({
+      status: { $in: ['pending', 'Pending', 'approved', 'Approved'] }
+    })
+      .populate('userId', 'name email')
+      .populate('items.productId', 'title image price')
+      .sort({ createdAt: -1 });
 
-// Make sure every order has user info
     const safeOrders = orders.map(o => ({
       ...o.toObject(),
       userId: o.userId || { name: 'Deleted User', email: 'N/A' },
+      totalAmount: o.items.reduce(
+        (sum, item) => sum + (item.productId.price * item.qty),
+        0
+      ),
     }));
 
-
-    res.json({ success: true, orders });
+    res.json({ success: true, orders: safeOrders });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Failed to fetch orders' });
   }
 };
+
 
 // UPDATE ORDER STATUS (ADMIN)
 const updateOrderStatus = async (req, res) => {
