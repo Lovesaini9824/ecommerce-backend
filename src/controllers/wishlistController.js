@@ -1,5 +1,7 @@
+
 const Wishlist = require('../models/Wishlist');
 
+// ADD / REMOVE
 const toggleWishlist = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -17,21 +19,23 @@ const toggleWishlist = async (req, res) => {
 
   } catch (err) {
     if (err.code === 11000) {
-      // duplicate insert safety
       return res.json({ wished: true });
     }
     res.status(500).json({ message: 'Wishlist error' });
   }
 };
 
-
-/* GET USER WISHLIST */
+// ✅ FETCH BY USER ID (THIS IS THE KEY)
 const getWishlist = async (req, res) => {
   try {
-    const list = await Wishlist.find({ userId: req.user._id })
+    const items = await Wishlist
+      .find({ userId: req.user._id }) // 🔥 USER-SCOPED
       .populate('productId');
 
-    res.json({ success: true, wishlist: list });
+    res.json({
+      success: true,
+      wishlist: items,
+    });
   } catch (err) {
     res.status(500).json({ message: 'Fetch failed' });
   }
