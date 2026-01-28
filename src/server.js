@@ -16,16 +16,12 @@ app.use('/api/cart', require('./routes/cart'));
 app.use('/api/orders', require('./routes/orders'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api', require('./routes/address'));
-
-app.use('/api/admin', require('./routes/admin'));
-const paymentRoutes = require("./routes/payment");
-app.use("/payment", paymentRoutes);
 app.use('/api/admin/orders', require('./routes/adminOrders'));
-
 app.use('/api/wishlist', require('./routes/wishlist'));  
+
 ///users/update-profile
 //images
-app.use("/images", express.static(path.join(__dirname, "assests/images")));
+app.use("/images", express.static(path.join(__dirname, "assests")));
 
 // DB connect
 (async () => {
