@@ -4,8 +4,8 @@ const { saveAddress, getAddresses, updateAddress, deleteAddress} = require('../c
 const router = express.Router();
 
 router.use(protect);
-router.post('/address', saveAddress);
-router.get('/address', getAddresses);
-router.put('/address/:addressId', updateAddress);       // Update address by ID
-router.delete('/address/:addressId', deleteAddress);
+router.post('/address', protect, saveAddress);
+router.get('/address',protect, getAddresses);
+router.put('/address/:addressId',protect, updateAddress);       // Update address by ID
+router.delete('/address/:addressId',protect, deleteAddress);
 module.exports = router;
