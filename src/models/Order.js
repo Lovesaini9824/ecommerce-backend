@@ -1,21 +1,24 @@
 const mongoose = require('mongoose');
 
-const wishlistSchema = new mongoose.Schema(
-  {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
+const orderSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  items: [
+    {
+      productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
+      title: String,
+      image: String,
+      qty: { type: Number, required: true, min: 1 },
+      price: { type: Number, required: true },
     },
-    productId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Product',
-      required: true,
-    },
+  ],
+  total: { type: Number, required: true, min: 0 },
+  address: {
+    name: String, phone: String, street: String, city: String, state: String, zip: String
   },
-  { timestamps: true }
-);
+  payment_type: { type: String, enum: ['COD', 'Online', 'UPI', 'Card'], default: 'COD' },
+  status: { type: String, enum: ['Pending', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled','Return Requested','Returned'], default: 'Pending' },
+  returnReason: { type: String },
+  returnRequestedAt: { type: Date },
+}, { timestamps: true });
 
-wishlistSchema.index({ userId: 1}, { unique: true });
-
-module.exports = mongoose.model('Wishlist', wishlistSchema);
+module.exports = mongoose.model('Order', orderSchema);
