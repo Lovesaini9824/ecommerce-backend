@@ -6,26 +6,18 @@ const Product = require('../models/Product');
 const buyNow = async (req, res) => {
   try {
     const userId = req.user._id;
-    const { productId, qty = 1, payment_type = 'COD', address } = req.body;
+    const { items, payment_type = 'COD', address } = req.body;
 
-    if (!productId)
-      return res.status(400).json({ message: 'Product ID required' });
-
-    if (
-      !address?.name ||
-      !address?.phone ||
-      !address?.street ||
-      !address?.city ||
-      !address?.state ||
-      !address?.zip
-    ) {
-      return res.status(400).json({ message: 'Complete address is required' });
+    if (!items || items.length === 0) {
+      return res.status(400).json({ message: 'No product provided' });
     }
 
-    const product = await Product.findById(productId);
-    if (!product) return res.status(404).json({ message: 'Product not found' });
+    const { product_id, qty = 1 } = items[0];
 
-    const safeQty = Math.max(Number(qty), 1);
+    const product = await Product.findById(product_id);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
 
     const order = await Order.create({
       userId,
@@ -34,19 +26,19 @@ const buyNow = async (req, res) => {
           productId: product._id,
           title: product.title,
           image: product.image,
-          qty: safeQty,
+          qty,
           price: product.price,
         },
       ],
-      total: product.price * safeQty,
+      total: product.price * qty,
       address,
       payment_type,
-      status: payment_type === 'Online' ? 'Confirmed' : 'Pending', // COD = pending
+      status: payment_type === 'ONLINE' ? 'Confirmed' : 'Pending',
     });
 
     res.status(201).json({
       success: true,
-      message: 'Order placed successfully',
+      message: 'Buy now order placed',
       orderId: order._id,
     });
   } catch (err) {
@@ -54,6 +46,7 @@ const buyNow = async (req, res) => {
     res.status(500).json({ message: 'Buy now failed' });
   }
 };
+
 
 // ====================== PLACE ORDER FROM CART ======================
 const placeOrder = async (req, res) => {
@@ -239,4 +232,3 @@ module.exports = {
   getAllOrders,
   updateOrderStatus,
 };
-
