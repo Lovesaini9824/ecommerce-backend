@@ -563,22 +563,38 @@ const getAllOrders = async (req, res) => {
     const orders = await Order.find({ user: req.user.id })
       .populate('items.productId', 'title image');
 
-    res.json(
-      orders.map(order => ({
-        orderId: order._id,
+    // res.json(
+    //   orders.map(order => ({
+    //     orderId: order._id,
+    //     createdAt: order.createdAt,
+    //     status: order.status,
+    //     paymentType: order.paymentType,
+    //     total: order.total,
+    //     items: order.items.map(item => ({
+    //       productId: item.productId._id,
+    //       title: item.productId.title,
+    //       qty: item.qty,
+    //       price: item.price,
+    //       image: item.productId.image, // ✅ ADD HERE
+    //     })),
+    //   }))
+    // );
+    res.json({
+      orders: orders.map(order => ({
+        _id: order._id,
         createdAt: order.createdAt,
         status: order.status,
-        paymentType: order.paymentType,
-        total: order.total,
+        payment_type: order.payment_type,
+        total: order.total, // ✅ DISCOUNTED TOTAL
         items: order.items.map(item => ({
           productId: item.productId._id,
-          title: item.productId.title,
+          title: item.title,
           qty: item.qty,
-          price: item.price,
-          image: item.productId.image, // ✅ ADD HERE
+          price: item.price, // ✅ STORED DISCOUNT PRICE
+          image: item.image,
         })),
-      }))
-    );
+      })),
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
